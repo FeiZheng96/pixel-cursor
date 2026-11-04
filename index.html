@@ -174,9 +174,9 @@ function close(k){const w=wins[k],r=w.getBoundingClientRect();w.classList.add('c
 function open(k){const w=wins[k];if(!w.classList.contains('closed')){front(w);return}const r=w.getBoundingClientRect();zoom(iconOf(k).getBoundingClientRect(),r,()=>{w.classList.remove('closed');front(w)})}
 const icons=document.querySelectorAll('.icon');
 for(const ic of icons){
- ic.addEventListener('click',e=>{e.stopPropagation();for(const o of icons)o.classList.toggle('sel',o===ic)});
- const act=()=>{if(ic.dataset.win)open(ic.dataset.win);else document.getElementById('pixel-skill-toggle').click()};
- ic.addEventListener('dblclick',e=>{e.stopPropagation();act()});
+ // one click opens: on the web nobody double-clicks, and a select-only first click reads as broken
+ const act=()=>{if(ic.dataset.win)open(ic.dataset.win);else if(document.getElementById('pixel-skill-panel').hidden)document.getElementById('pixel-skill-toggle').click()};
+ ic.addEventListener('click',e=>{e.stopPropagation();for(const o of icons)o.classList.toggle('sel',o===ic);act()});
  ic.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();act()}});
 }
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('.icon'))for(const o of icons)o.classList.remove('sel')});
@@ -185,10 +185,11 @@ addEventListener('resize',()=>{for(const w of Object.values(wins))if(wide())clam
 front(wins.main);
 })();
 </script><script>
-// English for any non-Chinese browser. The page is authored in Chinese; this swaps text, attributes and
-// toast lines in place, so the original scripts keep working unchanged.
-(()=>{if(/^zh/i.test(navigator.language||''))return;
-const T={'小小游乐场':'Little Playground','游乐场':'Playground','光标':'Cursors','日常':'Daily','演示':'Present','获取 Skill':'Get Skill',
+// The page is authored in Chinese. Japanese browsers get Japanese, every other non-Chinese browser English;
+// this swaps text, attributes and toast lines in place, so the original scripts keep working unchanged.
+(()=>{const lang=navigator.language||'';if(/^zh/i.test(lang))return;
+const JA=/^ja/i.test(lang);
+let T={'小小游乐场':'Little Playground','游乐场':'Playground','光标':'Cursors','日常':'Daily','演示':'Present','获取 Skill':'Get Skill',
 '5 个玩具':'5 toys','拖右下角缩放':'Drag the corner to resize','15 项':'15 items','移上去试试':'Hover to try one on','你':'You',
 '把你，也变成像素鼠标。':'Turn yourself into a pixel cursor.',
 '下载 skill 包，交给 Codex 安装。新对话上传一张自己的照片，即可生成同角色的整套光标和互动网页。':'Download the skill and hand it to Codex. Then drop one photo of yourself into a new chat, and it draws a whole cursor set of you, plus a little playground page like this one.',
@@ -200,14 +201,35 @@ const T={'小小游乐场':'Little Playground','游乐场':'Playground','光标'
 '这份小心情，留在这里。':'Your little mood is safe here.','今天也要开心。':'Be happy today, okay?','喝口茶，慢慢来。':'Sip some tea, take it slow.','小教鞭，准备好了。':'Little pointer, ready.',
 '下载后，把 ZIP 发给 Codex，说：请安装这个 skill。':'Downloaded. Send the ZIP to Codex and say: “Please install this skill.”',
 '下载未能开始，请重新打开完整 HTML 后再试。':'The download didn’t start. Reopen the full page and try again.'};
-const CELL={'日常':'Normal','开心':'Delighted','稍等':'Wait','输入':'Text','不可用':'Unavailable','想一想':'Help','瞄准':'Precision','链接':'Link','上下缩放':'Resize ↕','左右缩放':'Resize ↔','教鞭':'Pointer','教鞭 · 开心':'Pointer joy','获取 Skill':'Get Skill'};
-const A={'网页鼠标模式':'Cursor mode','网页内使用日常鼠标':'Use the everyday cursor','网页内使用教鞭鼠标':'Use the presenter cursor','切换夜色':'Toggle night','关闭窗口':'Close window',
+let CELL={'日常':'Normal','开心':'Delighted','稍等':'Wait','输入':'Text','不可用':'Unavailable','想一想':'Help','瞄准':'Precision','链接':'Link','上下缩放':'Resize ↕','左右缩放':'Resize ↔','教鞭':'Pointer','教鞭 · 开心':'Pointer joy','获取 Skill':'Get Skill'};
+let A={'网页鼠标模式':'Cursor mode','网页内使用日常鼠标':'Use the everyday cursor','网页内使用教鞭鼠标':'Use the presenter cursor','切换夜色':'Toggle night','关闭窗口':'Close window',
 '鼠标互动小舞台':'Cursor playground','送一颗心':'Send a heart','等一小会':'Wait a sec','想一想':'Hmm, let me think','瞄准一点':'Aim at a spot','这里还没开放':'Not open yet',
 '写一句小心情':'Write a little mood','写一句小心情…':'Write a little mood…','获取个人像素鼠标 Skill':'Get your own pixel cursor skill',
 '向左上缩放':'Resize up-left','向右上缩放':'Resize up-right','向左下缩放':'Resize down-left','向右下缩放':'Resize down-right','向上缩放':'Resize up','向下缩放':'Resize down','向右缩放':'Resize right','向左缩放':'Resize left'};
-document.documentElement.lang='en';document.title='Miki · Little Playground';
+let NW='Resize ↘',NE='Resize ↙';
+if(JA){
+T={'小小游乐场':'ちいさな遊び場','游乐场':'遊び場','光标':'カーソル','日常':'ふだん','演示':'プレゼン','获取 Skill':'スキルをもらう',
+'5 个玩具':'おもちゃ 5こ','拖右下角缩放':'右下の角でサイズ変更','15 项':'15 こ','移上去试试':'カーソルを乗せてみてね','你':'YOU',
+'把你，也变成像素鼠标。':'あなたも、ドット絵風カーソルに。',
+'下载 skill 包，交给 Codex 安装。新对话上传一张自己的照片，即可生成同角色的整套光标和互动网页。':'スキルをダウンロードして Codex に渡してね。新しいチャットで自撮りを1枚送ると、あなたそっくりのカーソル一式と、このページみたいな遊び場ができあがります。',
+'下载 Skill · 4.5 MB ↓':'スキルをダウンロード · 4.5 MB ↓','14 款 × 6 个姿态 · 含脚本、模板与示例':'14種類 × 6コマ · スクリプト・テンプレート・サンプル付き',
+'不含人物原始照片。生成光标后，系统主题需另行安装。':'元の写真は入っていません。パソコンのカーソルとして使うには別に設定が必要です。',
+'收到一颗小小的心。':'ちいさなハート、受け取ったよ。','又多了一点快乐。':'またちょっと、うれしくなった。','今天也被温柔接住了。':'今日もやさしくしてもらえた。',
+'好事，值得等一小会。':'いいことは、ちょっと待つ価値あり。','好啦。':'できた！','试试边角，也可以拉大一点。':'角をつかむと、大きくもできるよ。',
+'在空白处，留下一个小点。':'空いてるところに、ちいさな点をどうぞ。','继续自由走走。':'じゃあ、自由にお散歩しよう。','这份惊喜，再等一等。':'このおたのしみは、もうちょっと待ってね。',
+'这份小心情，留在这里。':'その気持ち、ここに置いておくね。','今天也要开心。':'今日もいい日になりますように。','喝口茶，慢慢来。':'お茶でも飲んで、ゆっくりね。','小教鞭，准备好了。':'指し棒、準備できたよ。',
+'下载后，把 ZIP 发给 Codex，说：请安装这个 skill。':'ダウンロードできたよ。ZIP を Codex に送って「このスキルをインストールして」と伝えてね。',
+'下载未能开始，请重新打开完整 HTML 后再试。':'ダウンロードが始まりませんでした。ページを開き直して、もう一度試してね。'};
+CELL={'日常':'ふつう','开心':'うれしい','稍等':'待ってね','输入':'入力','不可用':'使えない','想一想':'なんだろう','瞄准':'ねらう','链接':'リンク','上下缩放':'リサイズ ↕','左右缩放':'リサイズ ↔','教鞭':'指し棒','教鞭 · 开心':'指し棒 ♪','获取 Skill':'スキルをもらう'};
+A={'网页鼠标模式':'カーソルモード','网页内使用日常鼠标':'ふだんのカーソル','网页内使用教鞭鼠标':'プレゼン用カーソル','切换夜色':'夜モード切り替え','关闭窗口':'ウィンドウを閉じる',
+'鼠标互动小舞台':'カーソルの遊び場','送一颗心':'ハートを送る','等一小会':'ちょっと待つ','想一想':'うーん、なんだろう','瞄准一点':'ねらいを定める','这里还没开放':'まだ準備中だよ',
+'写一句小心情':'今の気持ちをひとこと','写一句小心情…':'今の気持ちをひとこと…','获取个人像素鼠标 Skill':'自分のカーソルを作るスキル',
+'向左上缩放':'左上へリサイズ','向右上缩放':'右上へリサイズ','向左下缩放':'左下へリサイズ','向右下缩放':'右下へリサイズ','向上缩放':'上へリサイズ','向下缩放':'下へリサイズ','向右缩放':'右へリサイズ','向左缩放':'左へリサイズ'};
+NW='リサイズ ↘';NE='リサイズ ↙';
+}
+document.documentElement.lang=JA?'ja':'en';document.title=JA?'Miki · ちいさな遊び場':'Miki · Little Playground';
 const tr=(el,map)=>{for(const n of el.childNodes)if(n.nodeType===3){const k=n.nodeValue.trim();if(map[k])n.nodeValue=n.nodeValue.replace(k,map[k]);}};
-for(const el of document.querySelectorAll('.spec .name')){const id=el.closest('[data-spec]')?.dataset.spec;if(id==='09-resize-nwse')el.textContent='Resize ↘';else if(id==='10-resize-nesw')el.textContent='Resize ↙';else tr(el,CELL);}
+for(const el of document.querySelectorAll('.spec .name')){const id=el.closest('[data-spec]')?.dataset.spec;if(id==='09-resize-nwse')el.textContent=NW;else if(id==='10-resize-nesw')el.textContent=NE;else tr(el,CELL);}
 for(const el of document.querySelectorAll('body *:not(script):not(style)'))if(!el.closest('.spec .name'))tr(el,T);
 for(const el of document.querySelectorAll('[aria-label],[title],[placeholder],[data-tip]'))for(const a of ['aria-label','title','placeholder','data-tip']){const v=el.getAttribute(a);if(v&&A[v])el.setAttribute(a,A[v]);}
 const live=el=>{if(!el)return;new MutationObserver(()=>{const k=el.textContent.trim();if(T[k])el.textContent=T[k];}).observe(el,{childList:true,characterData:true,subtree:true});};
